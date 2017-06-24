@@ -1,7 +1,8 @@
 # telnet program example
 import socket, select, string, sys
-
+import os
 def printmenu():
+    b = os.system('clear')
     print "==============================="
     print "===== DDoS Master Control ====="
     print "==============================="
@@ -11,6 +12,7 @@ def printmenu():
     print "Send attack command\t\t[2]"
     print "Send stop command\t\t[3]"
     print "Close connection from server\t[4]"
+    print "\n--> ",
     return int(raw_input())
 
 def receivemessage(socket):

