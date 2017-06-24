@@ -63,7 +63,7 @@ if __name__ == "__main__":
             #Start attack command
             elif option == "attack":
                 print "Insert victim ip and port: ",
-                victim = raw_input()
+                victim = str(raw_input())
                 s.send("attack " + victim)
                 status = "Attacking!"
                 receivemessage(s)

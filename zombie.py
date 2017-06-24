@@ -15,7 +15,7 @@ def receivemessage(socket):
         sys.exit()
     else :
         #print data
-        sys.stdout.write("Server Response: " + data + "\n")
+        sys.stdout.write("Server Response: " + data)
         return data
 
 #pid = fork()
@@ -35,7 +35,6 @@ port = int(sys.argv[2])
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.settimeout(None)
-print "test"
 # connect to remote host
 try :
     s.connect((host, port))
@@ -49,14 +48,11 @@ alive = 1;
 status = "Idle"
 try:
     while alive:
-        data = s.recv(1024)
+        data = receivemessage(s)
         print data
         if data.rstrip() == "die":
             s.send("die")
             alive = 0
-        #data = receivemessage(s)
-        #Message Received
-        #alive = self.onmessage(client, data, client_role)
 
 except KeyboardInterrupt:
     # Fim do programa
