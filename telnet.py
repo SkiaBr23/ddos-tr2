@@ -92,3 +92,8 @@ if __name__ == "__main__":
         print "Disconnecting..."
         s.send("die")
         sys.exit()
+    except Exception as ex:
+        # Fim do programa
+        print ex
+        s.send("die")
+        sys.exit()
