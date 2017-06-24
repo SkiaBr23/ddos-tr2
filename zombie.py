@@ -34,7 +34,7 @@ host = sys.argv[1]
 port = int(sys.argv[2])
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.settimeout(2)
+s.settimeout(None)
 print "test"
 # connect to remote host
 try :
@@ -49,8 +49,12 @@ alive = 1;
 status = "Idle"
 try:
     while alive:
-        #data = client.recv(1024)
-        data = receivemessage(s)
+        data = s.recv(1024)
+        print data
+        if data.rstrip() == "die":
+            s.send("die")
+            alive = 0
+        #data = receivemessage(s)
         #Message Received
         #alive = self.onmessage(client, data, client_role)
 

