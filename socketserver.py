@@ -8,7 +8,7 @@ class SocketServer(socket.socket):
         socket.socket.__init__(self)
         #To silence- address occupied!!
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.bind(('127.0.0.1', 4545))
+        self.bind(('192.168.25.3', 4545))
         self.listen(5)
 
     def run(self):
@@ -27,7 +27,7 @@ class SocketServer(socket.socket):
         while 1:
             (clientsocket, address) = self.accept()
             #Adding client to clients list
-            if address[0] == "192.168.25.3":
+            if address[0] == "127.0.0.1":
                 role = "master"
             else:
                 role = "zombie"
@@ -53,7 +53,6 @@ class SocketServer(socket.socket):
             if i[0] == client:
                 rmrole = i[1]
                 self.clients.remove(i)
-        #self.clients.remove((client,role))
         #Client Disconnected
         self.onclose(client,client.getsockname(),rmrole)
         #Closing connection with client
@@ -65,7 +64,7 @@ class SocketServer(socket.socket):
     def broadcast(self, message):
         #Sending message to all clients
         for client,role in self.clients:
-            client.send(message)
+            client.send(message+"\n")
 
     def multicast(self,message,sender):
         #Sending message to all clients but sender
@@ -94,8 +93,8 @@ class BasicChatServer(SocketServer):
 
     def onmessage(self, client, message):
         print "Client Sent Message"
-        #Sending message to all clients
-        self.multicast(message, client)
+        #Sending message to all clients but sender
+        self.broadcast(message)
 
     def onopen(self, client, address, role):
         print role.capitalize() + " Connected = " + str(address)
