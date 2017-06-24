@@ -29,7 +29,7 @@ class SocketServer(socket.socket):
         while 1:
             (clientsocket, address) = self.accept()
             #Adding client to clients list
-            if address[0] == "127.0.0.1":
+            if address[0] == "192.168.25.3":
                 role = "master"
             else:
                 role = "zombie"

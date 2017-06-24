@@ -58,10 +58,10 @@ if __name__ == "__main__":
                 receivemessage(s)
             elif option == 2:
                 s.send("attack")
-                receivemessage(s)
+                 #receivemessage(s)
             elif option == 3:
                 s.send("stop")
-                receivemessage(s)
+                # receivemessage(s)
             elif option == 4:
                 s.send("die")
                 receivemessage(s)
