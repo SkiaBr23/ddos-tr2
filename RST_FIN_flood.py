@@ -284,7 +284,16 @@ else:
         if not args.quiet:
             print "len=%d ip=%s dport=%d ttl=255 DF id=%d sport=%d flags=S seq=%d win=%d" % (len(packet),args.dest_ip,dest_port,args.id,args.source_port,pkt_counter,args.window_size)
         s.sendto(packet,(args.dest_ip, 0))
-        packet = montaPacote(0,args.source_ip, args.dest_ip, args.source_port, dest_port, args.window_size, args.id, send_rst, send_fin)
+        
+        if x%2 ==0:
+            send_rst = 1
+            send_fin = 0
+            packet = montaPacote(0,args.source_ip, args.dest_ip, args.source_port, dest_port, args.window_size, args.id, send_rst, send_fin)
+        else:
+            send_rst = 0
+            send_fin = 1
+            packet = montaPacote(0,args.source_ip, args.dest_ip, args.source_port, dest_port, args.window_size, args.id, send_rst, send_fin)
+
         pkt_counter += 1
 
 # Fim do programa
