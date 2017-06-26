@@ -3,10 +3,18 @@ import thread
 import re
 class SocketServer(socket.socket):
     clients = []
-
+    master_ip = ""
     def __init__(self):
+
+        # Set hostname and port as argument or default
+        if(len(sys.argv) < 2) :
+            master_ip = "192.168.25.11"
+        else:
+            master_ip = sys.argv[1]
+
         socket.socket.__init__(self)
-        #To silence- address occupied!!
+
+        # Socket config
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.bind(('192.168.25.3', 4545))
         self.listen(5)

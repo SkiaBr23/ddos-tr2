@@ -11,6 +11,8 @@ from struct import *
 from random import randint
 from multiprocessing import Process
 
+# TODO: Remover prints na tela
+# TODO: Remover imports desnecessários
 
 # Funcoes auxiliares para calculo do checksum
 
