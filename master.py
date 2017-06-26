@@ -1,4 +1,4 @@
-# telnet program example
+#coding: utf-8
 import socket, select, string, sys
 import os
 def printmenu(status):
@@ -91,11 +91,15 @@ if __name__ == "__main__":
             raw_input("Press Enter to continue...")
     except KeyboardInterrupt:
         # Fim do programa
+        if status == "Attacking!":
+            s.send("stop")
         print "Disconnecting..."
         s.send("die")
         sys.exit()
     except Exception as ex:
         # Fim do programa
         print ex
+        if status == "Attacking!":
+            s.send("stop")
         s.send("die")
         sys.exit()
