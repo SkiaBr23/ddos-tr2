@@ -184,9 +184,7 @@ def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
 
 #comando para ver processos: ps -eo pid,ppid,stat,cmd
 #comando mais simples: top
-# TODO: testar ataque com processo zombie
-#pid = fork()
-pid = 1
+pid = fork()
 if pid == 0:
     exit()
 else:
