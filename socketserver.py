@@ -31,6 +31,7 @@ class SocketServer(socket.socket):
             print ""
         finally:
             print "Server closed"
+            self.broadcast("stop")
             for client,role in self.clients:
                 client.close()
             self.close()

