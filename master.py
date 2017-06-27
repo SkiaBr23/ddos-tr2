@@ -1,8 +1,9 @@
 #coding: utf-8
-import socket, select, string, sys
+import socket
+import sys
 import os
 def printmenu(status):
-    b = os.system('clear')
+    os.system('clear')
     print "================================="
     print "====== DDoS Master Control ======"
     print "================================="
@@ -20,10 +21,10 @@ def printmenu(status):
 
 def receivemessage(socket):
     data = socket.recv(1024)
-    if not data :
+    if not data:
         print 'Connection closed'
         sys.exit()
-    else :
+    else:
         #print data
         sys.stdout.write("Server Response: " + data + "\n")
         return data
@@ -31,7 +32,7 @@ def receivemessage(socket):
 #main function
 if __name__ == "__main__":
 
-    if(len(sys.argv) < 3) :
+    if len(sys.argv) < 3:
         print 'Usage : python telnet.py hostname port'
         sys.exit()
 
@@ -50,7 +51,7 @@ if __name__ == "__main__":
 
     print 'Connected to remote host'
 
-    alive = 1;
+    alive = 1
     status = "Idle"
     try:
         while alive:

