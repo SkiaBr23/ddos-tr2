@@ -191,7 +191,8 @@ def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
 
 #comando para ver processos: ps -eo pid,ppid,stat,cmd
 #comando mais simples: top
-pid = fork()
+#pid = fork()
+pid = 1
 if pid == 0:
     sys.exit()
 else:
