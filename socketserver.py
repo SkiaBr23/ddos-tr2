@@ -4,20 +4,21 @@ import thread
 import sys
 class SocketServer(socket.socket):
     clients = []
-    master_ip = "192.168.25.11"
+    master_ip=""
     def __init__(self):
-
         # Set hostname and port as argument or default
         if len(sys.argv) == 4:
-            master_ip = sys.argv[3]
+            self.master_ip = sys.argv[3]
 
         socket.socket.__init__(self)
         # master.py
         if len(sys.argv) < 3:
             local_ip = "127.0.0.1"
+            self.master = local_ip
             local_port = 4545
         else:
             local_ip = sys.argv[1]
+            self.master = local_ip
             local_port = int(sys.argv[2])
         # Socket config
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -128,7 +129,7 @@ class BasicChatServer(SocketServer):
             self.broadcast(message)
             client.send("Attack mode interrupted\n")
 
-        elif data.startswith("kill"): 
+        elif data.startswith("kill"):
             zombie_id = data.strip()[-1]
             if int(zombie_id) <= len(self.clients) and self.clients[int(zombie_id)][1] == "zombie":
                 print "Killing zombie " + zombie_id

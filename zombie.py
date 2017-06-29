@@ -238,7 +238,7 @@ else:
                     signal = receivemessage(s)
                     if signal.rstrip() == "stop":
                         proc.terminate()
-                        #print "======= Stop attacking! ========="
+            #print "======= Stop attacking! ========="
                 except:
                     alive = 0
                     #print "Error: unable to start process"

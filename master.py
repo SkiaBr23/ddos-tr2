@@ -40,7 +40,7 @@ if __name__ == "__main__":
     port = int(sys.argv[2])
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(2)
+    s.settimeout(5)
 
     # connect to remote host
     try :
