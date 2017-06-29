@@ -243,6 +243,8 @@ packet = montaPacote(0,args.source_ip, args.dest_ip, args.source_port, randint(1
     
 # Contadores do programa
 pkt_counter = 0
+rst_counter = 0
+fin_counter = 0
 
 # Escolha do modo
 
@@ -261,18 +263,20 @@ if args.flood:
                 send_rst = 1
                 send_fin = 0
                 packet = montaPacote(0,args.source_ip, args.dest_ip, randint(1800,65533), args.dest_port, args.window_size, args.id, send_rst, send_fin)
+                rst_counter += 1
 
             #envia pacotes com FIN setado
             else:
                 send_rst = 0
                 send_fin = 1
                 packet = montaPacote(0,args.source_ip, args.dest_ip, randint(1800,65533), args.dest_port, args.window_size, args.id, send_rst, send_fin)
+                fin_counter += 1
 
     except KeyboardInterrupt:
         # Fim do programa
         print ""
         print "--- %s hbordimg statistic ---" % args.dest_ip
-        print "--- %d packets transmitted ---" % pkt_counter
+        print "--- %d RST packets transmitted & %d FIN packets transmitted---" % (rst_counter, fin_counter)
         sys.exit()
 else:
     # Modo normal, enviando 'c' pacotes
@@ -289,17 +293,19 @@ else:
             send_rst = 1
             send_fin = 0
             packet = montaPacote(0,args.source_ip, args.dest_ip, args.source_port, dest_port, args.window_size, args.id, send_rst, send_fin)
+            rst_counter += 1
         else:
             send_rst = 0
             send_fin = 1
             packet = montaPacote(0,args.source_ip, args.dest_ip, args.source_port, dest_port, args.window_size, args.id, send_rst, send_fin)
+            fin_counter += 1
 
         pkt_counter += 1
 
 # Fim do programa
 print ""
 print "--- %s hbordimg statistic ---" % args.dest_ip
-print "--- %d packets transmitted ---" % pkt_counter
+print "--- %d RST packets transmitted & %d FIN packets transmitted---" % (rst_counter, fin_counter)
 
 
 
