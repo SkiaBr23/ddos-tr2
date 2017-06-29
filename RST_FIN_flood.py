@@ -262,14 +262,14 @@ if args.flood:
             if pkt_counter%2 == 0:
                 send_rst = 1
                 send_fin = 0
-                packet = montaPacote(0,args.source_ip, args.dest_ip, randint(1800,65533), args.dest_port, args.window_size, args.id, send_rst, send_fin)
+                packet = montaPacote(rst_counter,args.source_ip, args.dest_ip, randint(1800,65533), args.dest_port, args.window_size, args.id, send_rst, send_fin)
                 rst_counter += 1
 
             #envia pacotes com FIN setado
             else:
                 send_rst = 0
                 send_fin = 1
-                packet = montaPacote(0,args.source_ip, args.dest_ip, randint(1800,65533), args.dest_port, args.window_size, args.id, send_rst, send_fin)
+                packet = montaPacote(fin_counter,args.source_ip, args.dest_ip, randint(1800,65533), args.dest_port, args.window_size, args.id, send_rst, send_fin)
                 fin_counter += 1
 
     except KeyboardInterrupt:
@@ -292,12 +292,12 @@ else:
         if x%2 ==0:
             send_rst = 1
             send_fin = 0
-            packet = montaPacote(0,args.source_ip, args.dest_ip, args.source_port, dest_port, args.window_size, args.id, send_rst, send_fin)
+            packet = montaPacote(rst_counter,args.source_ip, args.dest_ip, args.source_port, dest_port, args.window_size, args.id, send_rst, send_fin)
             rst_counter += 1
         else:
             send_rst = 0
             send_fin = 1
-            packet = montaPacote(0,args.source_ip, args.dest_ip, args.source_port, dest_port, args.window_size, args.id, send_rst, send_fin)
+            packet = montaPacote(fin_counter,args.source_ip, args.dest_ip, args.source_port, dest_port, args.window_size, args.id, send_rst, send_fin)
             fin_counter += 1
 
         pkt_counter += 1
