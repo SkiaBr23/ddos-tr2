@@ -18,5 +18,5 @@ else:
     print "Parent: I created a child with pid", pid,\
           "and now all I want to do is sleep..."
     while True:
-        print "Caraio borracha"
+        #print "Caraio borracha"
         sleep(1)

